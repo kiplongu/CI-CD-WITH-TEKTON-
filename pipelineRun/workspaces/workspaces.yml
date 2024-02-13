@@ -1,0 +1,55 @@
+# What are Workspaces?
+# Workspaces in Tekton Pipelines provide a common location where tasks can read input files, write output files, and perform file operations within the context of the pipeline. They are similar to Volumes and can be defined at the Pipeline, Task, or Step level, each identified by a unique name.
+
+# During execution, workspaces can be mounted as volumes in the container where a Task or Step is running. The TaskRun facilitates making the file system parts available in different ways. This includes using a read-only ConfigMap or Secret, utilizing an existing PersistentVolumeClaim (PVC) shared with other tasks, creating a PersistentVolumeClaim from a provided VolumeClaimTemplate, or using an emptyDir that is discarded once the TaskRun is completed. We’ll delve into these concepts in greater detail in the next sections, gaining a deeper understanding of how workspaces operate within Tekton Pipelines and how they can enhance the efficiency of your pipeline execution.
+
+# By utilizing workspaces, developers can specify one or more volumes that each Task in the pipeline requires for its operations. This centralizes the file access and allows for efficient data sharing between tasks, enhancing the flexibility and efficiency of the pipeline execution.
+
+# Below is an example of defining and using workspaces :
+
+spec:
+  workspaces:
+    - name: main-ws # Workspace identifier for the Pipeline
+  tasks:
+    - name: handle-main-ws
+      taskRef:
+        name: gen-code # gen-code looks for a workspace named "output"
+      workspaces:
+        - name: output
+          workspace: main-ws
+    - name: handle-ws-twice
+      taskRef:
+        name: push # push expects a workspace with name "src"
+      runAfter:
+        - handle-main-ws # important: handle-main-ws writes to the workspace first
+      workspaces:
+        - name: src
+          workspace: main-ws
+
+
+---
+
+# For simplicity, you can also align the workspace name in the PipelineTask to match the workspace in the Pipeline, as demonstrated below:
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: pipeline
+spec:
+  workspaces:
+    - name: source
+  tasks:
+    - name: gen-code
+      taskRef:
+        name: gen-code # gen-code expects a Workspace named "source"
+      workspaces:
+        - name: source # mapping workspace name
+    - name: commit
+      taskRef:
+        name: commit # commit expects a Workspace named "source"
+      workspaces:
+        - name: source # <- mapping workspace name
+      runAfter:
+        - gen-code
+
+# Refer to the Kubernetes official documentation on PersistentVolumeClaims for a thorough understanding of their functionality.

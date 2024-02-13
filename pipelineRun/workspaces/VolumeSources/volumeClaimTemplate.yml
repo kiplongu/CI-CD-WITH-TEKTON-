@@ -1,0 +1,42 @@
+# volumeClaimTemplate
+# In Kubernetes and its ecosystem, managing storage and volumes is a crucial aspect - especially in CI/CD processes, where temporary storage can often be needed to share data between different tasks or steps, manage artifacts, or temporary files.
+
+# The volumeClaimTemplate is a feature that is quite handy in such scenarios. It allows users to dynamically create a Persistent Volume Claim (PVC) based on the template specified in the pipeline definition. This dynamically created PVC is exclusive to the particular PipelineRun or TaskRun and will be cleaned up once the run is completed. This helps in ensuring that the storage resources are efficiently used and managed, without the need for manual intervention to clean up after each run.
+
+# Let’s consider an example where a CI/CD pipeline needs to build an application and then run tests on the build. We’ll use a volumeClaimTemplate to provide a shared storage space for both tasks, as shown below:
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-and-test-pipeline
+spec:
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+  tasks:
+    - name: build
+      taskRef:
+        name: build-task
+      workspaces:
+        - name: workspace
+          workspace: shared-workspace
+    - name: test
+      taskRef:
+        name: test-task
+      runAfter:
+        - build
+      workspaces:
+        - name: workspace
+          workspace: shared-workspace
+
+
+
+# In this setup, a shared-workspace is created using a volumeClaimTemplate, which dynamically allocates a 1Gi read-write PVC for every pipeline run. The build task utilizes this workspace to conduct the build process and store the resulting artifacts. Execution steps for the build are defined in the referred taskRef. Following the build, the test task is configured to commence, thanks to the runAfter field, accessing the same shared-workspace to retrieve build artifacts for testing.
+
+# The overall workflow involves a dynamic creation of a PVC at the start of each pipeline run, ensuring a clean, isolated storage space. The build task utilizes this PVC to store the compiled application artifacts. Subsequently, the test task retrieves these artifacts for testing, initiated post-build task completion. Once the pipeline run ends, the PVC is automatically deleted, eliminating manual cleanup and ensuring efficient storage management throughout the CI/CD process, thanks to Tekton's volumeClaimTemplate.

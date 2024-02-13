@@ -1,0 +1,11 @@
+# emptyDir
+# To specify a temporary workspace that will not be used again, the emptyDir type is used. This option creates an empty volume when the task is executed and deletes the volume immediately after the task is completed. This type of volume is not suitable for sharing data among tasks.
+
+# Here is an example of how to declare the emptyDir volumeSource in workspaces:
+
+workspaces:
+  - name: myworkspace
+    emptyDir: {}
+
+
+

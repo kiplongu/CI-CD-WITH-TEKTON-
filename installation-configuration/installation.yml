@@ -1,0 +1,46 @@
+
+
+# install Tekton Pipelines and its dependencies:
+
+kubectl apply --filename https:‌//storage.googleapis.com/tekton-releases/pipeline/latest/release.yaml
+
+
+# Installing the Tekton CLI Component
+# The Tekton CLI (Command-Line Interface) serves the purpose of managing and interacting with Tekton Pipelines, enabling pipeline and task management, workflow execution, integration with version control systems, resource management, configuration, customization, and collaboration. It simplifies the management and execution of Tekton Pipelines through a command-line interface.
+
+# Complete the following steps to install a specific version of the tkn tool:
+
+# Locate the .deb package corresponding to the desired tkn release on the tkn Releases page, then proceed to install it using the following commands:
+
+curl -LO LINK-TO-THE-PACKAGE
+sudo dpkg -i ./PACKAGE-NAME
+
+
+
+# Substitute LINK-TO-THE-PACKAGE with your desired package's URL, and replace PACKAGE-NAME with the result from the initial command. For example:
+curl -LO https:‌//github.com/tektoncd/cli/releases/download/v0.32.0/tektoncd-cli-0.32.0_Linux-64bit.deb
+sudo dpkg -i tektoncd-cli-0.32.0_Linux-64bit.deb
+
+# Note: For rpm-based Linux /macOS you can refer to Tekton docs.
+
+
+
+# Installing the Tekton Triggers Component
+
+kubectl apply --filename https:‌//storage.googleapis.com/tekton-releases/triggers/latest/release.yaml
+kubectl apply --filename https:‌//storage.googleapis.com/tekton-releases/triggers/latest/interceptors.yaml
+
+# Installing the Tekton Dashboard Component
+
+kubectl apply --filename https:‌//github.com/tektoncd/dashboard/releases/download/v0.38.0/release-full.yaml
+
+
+
+# Configuring Authentication for Docker Registries
+
+# Docker Hub Registry:
+# The authentication process for a public registry is straightforward; we simply provide the Docker Hub registry's username and password within a secret. Tekton utilizes this secret to establish communication with the Docker Hub registry.
+
+# Use the following command to create the Docker secret:
+
+kubectl create secret docker-registry <DOCKER-SECRET-NAME> --docker-server=https:‌//index.docker.io/v1/ --docker-username=<repo username> --docker-password=<repo password> -n=tekton-pipelines

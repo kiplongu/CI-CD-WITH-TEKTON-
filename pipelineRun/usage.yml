@@ -1,0 +1,19 @@
+# Usage
+# To execute a PipelineRun, it is necessary to indicate the Pipeline to be run. One of the two ways to do this is by passing the name of the Pipeline in the pipelineRef field, as shown below:
+
+spec:
+  pipelineRef:
+    name: mypipeline
+
+
+
+---
+
+# Alternatively, the whole pipeline definition can be provided in the pipelineSpec field, as demonstrated below:
+
+spec:
+  pipelineSpec:
+    tasks:
+      - name: task1
+        taskRef:
+          name: mytask

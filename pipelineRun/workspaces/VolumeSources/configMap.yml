@@ -1,0 +1,28 @@
+# configMap
+# In Kubernetes, a ConfigMap is used to manage configuration data in a key-value format. It's a way to decouple environment-specific configuration from your application's code, making your application portable and scalable. In Tekton, you can use a ConfigMap as a volume source for a workspace, meaning tasks within your pipeline can read configuration data directly from the ConfigMap.
+
+# However, there are some constraints when using a ConfigMap as a workspace:
+
+# Read-Only: The mounted ConfigMap volume is read-only. It means that while tasks can read data from the ConfigMap, they can't modify it.
+# Pre-Existence Requirement: The ConfigMap must be created and available in the cluster before submitting the TaskRun or PipelineRun. It’s not created dynamically.
+# Size Limit: There’s a size limit of 1MB for a ConfigMap, constraining the amount of configuration data that can be stored.
+# Let’s consider an example where we create a ConfigMap to hold the application's configuration data.
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  app.config: |
+    apiUrl=https:‌//api.example.com
+    apiKey=abcd1234
+
+---
+# In the Tekton pipeline definition, we declare a workspace that uses the above ConfigMap.
+
+workspaces:
+  - name: config-workspace
+    configmap:
+    name: app-config
+
+# In this workflow, a ConfigMap named app-config is created with the necessary configuration data. In the Tekton pipeline, a workspace named config-workspace is declared that uses this ConfigMap. When the pipeline runs, tasks access the required configuration from this read-only workspace. The setup is straightforward and ensures that configuration data is easily accessible to all required tasks during the pipeline execution while maintaining the integrity of the data (as it is read-only).

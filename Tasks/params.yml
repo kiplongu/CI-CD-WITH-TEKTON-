@@ -1,0 +1,44 @@
+# object type:
+
+# The object type is used to group related parameters together. It allows you to organize and pass a set of related data as a single input parameter. This is particularly useful when you have multiple parameters that are closely related to a specific functionality.
+
+
+
+spec:
+  params:
+    - name: db-connection
+      type: object
+      properties:
+        host:
+          type: string
+          default: “localhost”
+        port:
+          type: string
+          default: "5432"
+        username:
+          type: string
+          default: "myuser"
+        password:
+          type: string
+          default: "mypassword"
+        database-name:
+          type: string
+          default: "mydb"
+
+
+---
+# arraytype:
+
+# In complex CI/CD workflows, particularly those involving software build and compilation processes, the need to use various compilation flags can often arise. These flags might differ depending on various factors such as the environment, build type, or specific configurations required for a particular build. Tekton Tasks enable dynamic handling of such variations through the use of array parameters.
+
+# array parameters in Tekton allow you to pass a list of values (specifically strings) to a Task. It accepts multiple string values in an array, providing flexibility to handle different requirements dynamically.
+
+spec:
+  params:
+    - name: flags
+      type: array
+      default:
+        - "--configure"
+        - "parameter1=foo"
+        - "--arbitraryFlag"
+        - "--additionalFlag"

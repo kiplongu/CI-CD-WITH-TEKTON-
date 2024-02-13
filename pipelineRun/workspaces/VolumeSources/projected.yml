@@ -1,0 +1,20 @@
+# projected
+# A projected volume in Kubernetes allows you to map several existing volume sources into the same directory. It can be thought of as a sort of combined or composite volume, enabling complex applications and workflows that require access to multiple pieces of data stored in different volume sources. Key points to note regarding projected volumes are:
+
+# Read-Only: Similar to using ConfigMaps and Secrets directly, the content of a projected volume is read-only.
+# Pre-Execution Requirement: The volumes that are being projected (like ConfigMaps and Secrets) should exist before the pipeline is run.
+# Multiple Sources: You can project ConfigMaps, Secrets, Service Account Tokens, and the Downward API.
+# Consider a scenario where a CI/CD pipeline needs both configuration data and sensitive credentials to build and deploy an application. The configuration data is stored in a configMap, and the sensitive credentials (like API keys or database passwords) are stored in a secret.
+
+# Here is how the projected volume source can be declared in the workspace to make both the configMap and the secret accessible to the tasks within the pipeline:
+
+workspaces:
+  - name: myworkspace
+    projected:
+      sources:
+        - configMap:
+            name: my-configmap
+        - secret:
+            name: my-secret
+
+# Ensure that the configMap named my-configmap and the secret my-secret are created and available in the cluster before the pipeline is initiated. In the pipeline definition, a workspace named myworkspace is declared with a projected volume source. This source combines data from both the my-configmap and my-secret. Tasks within the pipeline can now access both configuration data and sensitive credentials from the myworkspace. Since it’s read-only, the data integrity is maintained.

@@ -1,0 +1,36 @@
+# For the Tekton secret, let's pass our token as a secret with the manifest below. Copy this manifest in a file named token-secret.yaml:
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: token-secret
+data:
+  token: #OAuth token for the bot app
+
+
+
+---
+
+apiVersion: tekton.dev/v1beta1
+kind: TaskRun
+metadata:
+  name: run-send-to-channel-slack
+spec:
+  serviceAccountName: <Enter your Service Account Name>
+  params:
+    - name: token-secret
+      value: token-secret
+    - name: channel
+      value: #CHANNEL ID
+    - name: message
+      value: "Hello from Tekton!"
+  taskRef:
+    name: send-to-channel-slack
+
+
+
+#     Execute the following commands to apply all of these YAML files:
+
+# kubectl apply -f notification-task.yaml -n tekton-pipelines
+# kubectl apply -f token-secret.yaml -n tekton-pipelines
+# kubectl apply -f send-to-channel-slack-run.yaml -n tekton-pipelines

@@ -1,0 +1,24 @@
+# persistentVolumeClaim
+# Besides using volumeClaimTemplate for dynamic storage allocation, you can directly reference an existing persistentVolumeClaim (PVC) in the pipeline configuration. Unlike the dynamic PVC that is created and deleted with each PipelineRun or TaskRun, this method utilizes a static PVC that persists even after the completion of the pipeline execution.
+
+# Here’s an example declaration:
+
+workspaces:
+  - name: myworkspace
+    persistentVolumeClaim:
+      claimName: mypvc
+    subPath: my-subdir
+
+
+
+# In the example provided, myworkspace is a workspace that is linked to a pre-existing PVC by specifying the PVC's name in the persistentVolumeClaim field. The claimName is set to mypvc, indicating that this workspace will utilize the storage space allocated by the mypvc PVC.
+
+# The subPath attribute is an optional field that is used to reference a specific directory within the PVC. In this case, my-subdir is a directory within the mypvc PVC, and only this directory will be mounted to the myworkspace workspace. This can be particularly useful to isolate different workspaces or tasks that need to access different directories within the same PVC.
+
+# Here’s how the workflow would look:
+
+# A pre-existing PVC named mypvc is already available and created separately in the Kubernetes cluster. When the pipeline runs, the myworkspace workspace mounts the my-subdir directory from the mypvc PVC, providing a designated storage space for tasks that utilize this workspace. Tasks that are configured to use myworkspace can read and write data to the my-subdir directory within the mypvc PVC.
+
+# The main difference here, compared to the volumeClaimTemplate, is the static nature of the PVC. It is not created or deleted with each pipeline run, allowing for persistent storage that can be accessed across multiple runs, retaining data unless manually deleted.
+
+# This method is beneficial for scenarios where data persistence across multiple pipeline runs is necessary, or when a dedicated storage system (like a NFS or a cloud-based storage service) is used, and the PVC is meant to exist independently of individual pipeline runs.

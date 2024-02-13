@@ -1,0 +1,30 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: git-clone-notification-run
+spec:
+  serviceAccountName: <service Account name>
+  pipelineRef:
+    name: git-clone-notification
+  podTemplate:
+    securityContext:
+      fsGroup: 1001
+  params:
+    - name: gitrevision-tag
+      value: <branch name>
+  workspaces:
+    - name: shared-data
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
+
+
+
+# Now apply these files with the following commands:
+
+# kubectl apply -f git-clone-notification-pipeline.yaml -n tekton-pipelines
+# kubectl apply -f git-clone-notification-run.yaml -n tekton-pipelines

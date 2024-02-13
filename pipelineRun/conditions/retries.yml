@@ -1,0 +1,11 @@
+# retries Field
+# In Tekton Pipelines, the retries field allows you to specify the number of retry attempts for a Task in case of failure. By automatically retrying failed steps, Tekton enhances the reliability of Task execution, particularly in scenarios involving network connectivity issues or missing dependencies. This feature ensures that your Tasks have a higher chance of successful completion despite intermittent errors.
+
+# In the example below, the execution of the build-the-image task retries once after encountering a failure. However, if the retried execution also fails, the entire Task execution fails.
+
+# Example from Tekton documentation:https:‌//tekton.dev/docs/pipelines/pipelines/#using-the-retries-field
+tasks:
+  - name: build-the-image
+    retries: 1
+    taskRef:
+      name: build-push

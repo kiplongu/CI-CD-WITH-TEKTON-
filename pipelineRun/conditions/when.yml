@@ -1,0 +1,38 @@
+
+
+# Using the when Field
+# Tekton's when field enables conditional execution of Tasks, allowing you to control when a Task runs based on specific conditions.
+
+# The three components for the when expression are input, operator, and values.
+
+# input: The input to the when condition can either be a static input or variable (parameters from pipelines or results from previous tasks). If an input is not provided, it defaults to an empty string.
+# operator: The relationship between input and a set of values. The valid operator can be either in or notin. (Not-in)
+# values: An array of string values which must be provided and should be non-empty. It can contain static values or variables (parameters, results, or a workspace's bound state).
+
+tasks:
+  - name: initialize-directory
+    when:
+      - input: "$(params.directory)"
+        operator: in
+        values: ["./config"]
+    taskRef:
+      name: initialize-directory
+---
+tasks:
+  - name: notify-backup-status
+    when:
+      - input: "$(tasks.backup-data.results.status)"
+        operator: in
+        values: ["success"]
+    taskRef:
+      name: notify-backup-status
+---
+tasks:
+  - name: deploy-app
+    when:
+      - input:"$(workspaces.app-config.bound)"
+        operator: in
+        values: ["deploy-ready"]
+    taskRef:
+      name: deploy-app-config
+

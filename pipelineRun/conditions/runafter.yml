@@ -1,0 +1,30 @@
+# runAfter Field
+# The runAfter field in Tekton allows us to schedule a Task to run only after the completion of a specific task, ensuring proper sequencing of tasks. The runAfter field is used to explicitly specify that a particular Task should be executed after the completion of another Task. This is very useful in scenarios where certain tasks depend on the outcomes of others. Though the tasks are defined in an array, they are not necessarily executed in that order unless explicitly specified.
+
+
+# Let’s consider the example involving a simple pipeline with two tasks: one for testing the code and another for deploying the application.
+
+
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: simple-pipeline
+spec:
+  workspaces:
+    - name: source-code
+  tasks:
+    - name: test-code
+      taskRef:
+        name: test-task
+      workspaces:
+        - name: source
+          workspace: source-code
+    - name: deploy-app
+      taskRef:
+        name: deploy-task
+      runAfter:
+        - test-code
+      workspaces:
+        - name: source
+          workspace: source-code
+

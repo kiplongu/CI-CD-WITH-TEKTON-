@@ -1,0 +1,31 @@
+# Embedding TriggerTemplates Directly
+# Another approach to defining Triggers is by embedding TriggerTemplates directly within the Trigger definition. This approach can provide a more concise and self-contained configuration for your triggers. This approach offers an at-a-glance view of the trigger’s behavior and associated workflows. Let’s look at the example below:
+
+triggers:
+  - name: "my-trigger"
+    template:
+      spec:
+        params:
+          - name: "my-param-name"
+        resourceTemplates:
+          - apiVersion: "tekton.dev/v1beta1"
+            kind: TaskRun
+            metadata:
+              generateName: "pr-run-"
+            spec:
+              taskSpec:
+                steps:
+                  - image: ubuntu
+                    script: echo "hello there"
+
+
+
+# Regardless of which method you choose, it's essential to consider role assignments. In Tekton, EventListeners often act on behalf of service accounts, and in some cases, they may need to impersonate other service accounts. To facilitate this, you must update the roles assigned to the service account specified in the EventListener to grant it the necessary impersonation privileges. This ensures that the EventListener can interact with the service accounts specified in the Trigger.
+
+rules:
+  - apiGroups: [""] # The API groups to which this rule applies (empty string indicates the core API group)
+    resources: ["serviceaccounts"] # The Kubernetes resources to which this rule applies
+    verbs: ["impersonate"] # The actions (verbs) allowed for the specified resources
+
+# This role configuration is vital for maintaining security and ensuring that your EventListeners can perform its intended actions effectively.
+

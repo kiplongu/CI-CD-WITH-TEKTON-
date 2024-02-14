@@ -1,0 +1,5 @@
+# Specifying the cloudEventURI
+# Tekton allows us to specify the URI for the cloud event sink that receives cloud events during Trigger Processing. For instance, if we have an EventListener listening for any new changes in the cloud environment, such as a new image being added to a cloud-based image registry, we can trigger another pipeline to create a Helm chart for that new image by specifying the cloud EventListener and using the following format to specify the cloud URI.
+
+spec:
+  cloudEventURI: http:‌//eventlistener.free.beeceptor.com

@@ -1,0 +1,14 @@
+# Defining TriggerBindings, TriggerTemplates, and Interceptors Within the Trigger
+# The second method involves embedding TriggerBindings, TriggerTemplates, and Interceptors directly within the Trigger definition. This approach can be advantageous when you want to keep everything related to the trigger in one place, offering a self-contained configuration. Let’s look at an example:
+
+triggers:
+  - name: trigger-alpha
+    interceptors:
+      - github:
+          eventTypes: ["pull_request"]
+    bindings:
+      - ref: main-pipeline-binding # Reference to a TriggerBinding object
+      - name: greeting # Embedded Binding
+        value: Greetings via Triggers EventListener!
+    template:
+      ref: main-pipeline-template # Reference to a TriggerTemplate object

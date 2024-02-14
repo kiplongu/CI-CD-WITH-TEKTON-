@@ -1,0 +1,7 @@
+# Referencing an External Trigger Object
+# One approach to specifying triggers is by referencing an external Trigger object. This method provides modularity and reusability in your Tekton setups. Imagine you have a Trigger object named trigger-alpha that you want to associate with your EventListener. You can do this as follows:
+
+triggers:
+  - triggerRef: trigger-alpha
+
+# By employing this approach, you establish a clear separation between your EventListener configuration and Trigger definitions. This can be especially useful when you have complex workflows involving multiple EventListeners and triggers. This isolation also ensures that triggers can be reused, updated, and managed independently of the EventListeners they are associated with.

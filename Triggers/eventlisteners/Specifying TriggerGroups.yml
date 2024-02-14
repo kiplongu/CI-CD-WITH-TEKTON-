@@ -1,0 +1,89 @@
+# Specifying TriggerGroups
+# In larger and more complex projects where multiple events and development teams are involved, managing individual triggers can become an intricate task. TriggerGroups are introduced to mitigate this complexity, offering a streamlined method to group and manage related triggers. TriggerGroups are a powerful tool for organizing triggers into cohesive units, making maintenance easier and enhancing overall efficiency.
+
+# Why TriggerGroups?
+# Organizational Efficiency:
+# TriggerGroups encapsulate related triggers, ensuring that the configuration is tidy and manageable. This encapsulation is essential for reducing errors that can arise from misconfigurations and oversights, particularly in larger projects with numerous triggers.
+
+# Enhanced Collaboration:
+# Development teams can collaborate more effectively, with each team having clarity on the triggers they are responsible for. This clarity reduces overlaps and inconsistencies in trigger management.
+
+# TriggerGroups are defined using YAML files, which provide a structured and easy-to-read format. This YAML-based approach makes it straightforward to include multiple triggers within a group, ensuring that triggers are logically organized.
+
+# Examples
+# Let's explore how to specify triggers in the EventListener. The following example demonstrates an EventListener with an inline TriggerGroup:
+
+# Adapted from Tekton documentation: https:‌//tekton.dev/docs/triggers/eventlisteners/#specifying-triggergroups
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: my-event-listener
+spec:
+  triggerGroups:
+    - name: my-trigger-group # Name of the trigger group
+      interceptors:
+        - name: "github-auth-interceptor" # Name of the interceptor for GitHub authentication
+          ref:
+            name: "github-auth-task" # Reference to a Task for GitHub authentication
+          params:
+            - name: "secretRef"
+              value:
+                secretName: github-secret
+                secretKey: access-token
+            - name: "eventTypes"
+              value: ["push", "pull_request"] # Specifies the GitHub event types that will activate this EventListener
+      triggerSelector:
+        labelSelector:
+          matchLabels:
+            app: my-app # Match events with the "app" label equal to "my-app"
+
+
+---
+
+# In the above configuration, the EventListener acts as a gatekeeper, constantly monitoring for incoming events. Each event is then evaluated against a set criteria defined within the EventListener’s configuration. These criteria can be specific conditions or attributes that an event must possess to be considered relevant. If the incoming event does not meet these predefined conditions, it is effectively ignored, preventing unnecessary or inappropriate trigger activations.
+
+# If an event meets the criteria, the triggerSelector steps in and examines the attributes of the event and then determines which specific Trigger resources should be activated. Each Trigger is configured to initiate a particular action or set of actions, effectively starting a chain reaction of automated tasks or workflows based on the nature of the incoming event.
+
+# As triggers are processed within a triggerGroup, users have the opportunity to inject additional fields or parameters. Any additional fields specified under extensions will be made accessible to subsequent Trigger executions. This capability facilitates data sharing among all Triggers processed after the completion of the group execution.
+
+# To illustrate, here's an example of how to introduce an extension field, extensions.myfield, which will be accessible to all Trigger resources associated with this group:
+
+# Adapted from Tekton documentation: https:‌//tekton.dev/docs/triggers/eventlisteners/#specifying-triggergroups
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: example-event-listener
+spec:
+  triggerGroups:
+    - name: my-trigger-group
+      interceptors:
+        - name: "myfield-interceptor"
+          ref:
+            name: "cel-interceptor"
+          params:
+            - name: "filter"
+              value: "body.eventType == 'push'"
+            - name: "overlays"
+              value:
+                # Define an overlay named "myfield."
+                - key: myfield
+                  expression: "body.repository.name"
+      triggerSelector:
+        namespaceSelector:
+          matchNames:
+            # Match events in the namespace "my-namespace."
+            - my-namespace
+        labelSelector:
+          matchLabels:
+            # Match events with the label "type: tekton-trigger."
+            type: tekton-trigger
+
+
+
+# Let’s look closely at a few concepts demonstrated in the example above:
+
+# An interceptor named myfield-interceptor is defined. Interceptors process webhook requests and can modify the event payload or filter out the event based on certain conditions. In this case, the cel-interceptor is used to filter and modify the event payload.
+# The overlays parameter is a mechanism to add additional fields to the event payload and contains an array of key-value pairs that will be added to the event payload if the conditions specified in the filter parameter are met.
+# key: myfield: This line specifies that an additional field named myfield will be added to the event payload.
+# expression: body.repository.name: The value of myfield will be the name of the repository from which the event originated. The expression body.repository.name extracts the repository name from the event payload.
+# Using extensions.myfield Later in Your Tekton Resources: After the event payload is modified by the interceptor, the myfield can be accessed in your TriggerBindings or TriggerTemplates using extensions.myfield. The extensions field contains all the additional fields added to the event payload by the interceptors.

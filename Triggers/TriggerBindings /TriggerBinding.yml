@@ -1,0 +1,93 @@
+
+# Inline bindings
+# The simplest way to declare bindings is within a Trigger itself:
+
+
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: push-trigger
+spec:
+  bindings:
+  - name: gitrevision
+    value: $(body.head_commit.id)
+  - name: gitrepositoryurl
+    value: $(body.repository.url)
+  template:
+    ref: git-clone-template
+
+
+---
+# TriggerBindings
+# The binding used above can be put in a TriggerBinding CRD in order to be reused across multiple triggers:
+
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: pipeline-binding
+spec:
+  params:
+  - name: gitrevision
+    value: $(body.head_commit.id)
+  - name: gitrepositoryurl
+    value: $(body.repository.url)
+  - name: contenttype
+    value: $(header.Content-Type)
+
+---
+    # A Trigger resource can then refer to this binding:
+
+apiVersion: triggers.tekton.dev/v1beta1
+kind: Trigger
+metadata:
+  name: push-trigger
+spec:
+  bindings:
+  - ref: pipeline-binding
+  template:
+    ref: git-clone-template
+
+
+---
+
+# ClusterTriggerBindings
+# A ClusterTriggerBinding is a cluster-scoped TriggerBinding that you can reuse across your entire cluster. You can reference a ClusterTriggerBinding in any Trigger in any namespace. You can specify multiple ClusterTriggerBindings within your Trigger as well as specify the same ClusterTriggerBinding in multiple Triggers.
+
+# Below is an example ClusterTriggerBinding definition:
+
+
+apiVersion: triggers.tekton.dev/v1beta1
+kind: ClusterTriggerBinding
+metadata:
+  name: pipeline-clusterbinding
+spec:
+  params:
+    - name: gitrevision
+      value: $(body.head_commit.id)
+    - name: gitrepositoryurl
+      value: $(body.repository.url)
+    - name: contenttype
+      value: $(header.Content-Type)
+
+
+---
+
+When referencing a ClusterTriggerBinding, you must specify a kind value within the bindings field. The default is TriggerBinding which denotes a namespaced TriggerBinding. For example:
+
+
+---
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: listener-clustertriggerbinding
+spec:
+  serviceAccountName: tekton-triggers-example-sa
+  triggers:
+    - name: foo-trig
+      bindings:
+        - ref: pipeline-clusterbinding
+          kind: ClusterTriggerBinding
+        - ref: message-clusterbinding
+          kind: ClusterTriggerBinding
+      template:
+        ref: pipeline-template
